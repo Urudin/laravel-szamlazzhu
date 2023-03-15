@@ -758,6 +758,9 @@ class Client
                 $writer->startElement('vevo');
                 {
                     $this->writeCdataElement($writer, 'nev', $invoice->customerName);
+                    if($invoice->customerCountry){
+                        $this->writeCdataElement($writer, 'orszag', $invoice->customerCountry);
+                    }
                     $this->writeCdataElement($writer, 'irsz', $invoice->customerZipCode);
                     $this->writeCdataElement($writer, 'telepules', $invoice->customerCity);
                     $this->writeCdataElement($writer, 'cim', $invoice->customerAddress);
@@ -765,6 +768,7 @@ class Client
                         $writer->writeElement('email', $invoice->customerEmail);
                     }
                     $writer->writeElement('sendEmail', $this->stringifyBoolean($invoice->customerReceivesEmail));
+                    $writer->writeElement('adoalany', $invoice->customerTaxType);
                     if ($invoice->customerTaxNumber) {
                         $this->writeCdataElement($writer, 'adoszam', $invoice->customerTaxNumber);
                     }
