@@ -785,7 +785,7 @@ class Client
                         $this->writeCdataElement($writer, 'adoszam', $invoice->customerTaxNumber);
                     }
                     if ($invoice->customerEUVAT) {
-                        $this->writeCdataElement($writer, 'adoszam', $invoice->customerTaxNumber);
+                        $this->writeCdataElement($writer, 'adoszamEU', $invoice->customerEUVAT);
                     }
                     if ($invoice->customerShippingName) {
                         $this->writeCdataElement($writer, 'postazasiNev', $invoice->customerShippingName);
