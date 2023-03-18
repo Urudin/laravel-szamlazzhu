@@ -140,6 +140,16 @@ class Client
                 'http://www.szamlazz.hu/xmlnyugtaget http://www.szamlazz.hu/docs/xsds/nyugtaget/xmlnyugtaget.xsd',
             ],
         ],
+
+        // Querying a tax payer
+        'QUERY_TAX_PAYER'             => [
+            'name'   => 'action-szamla_agent_taxpayer',
+            'schema' => [
+                'xmltaxpayer',
+                'http://www.szamlazz.hu/xmltaxpayer',
+                'http://www.szamlazz.hu/xmltaxpayer http://www.szamlazz.hu/docs/xsds/nyugtaget/xmltaxpayer.xsd',
+            ],
+        ],
     ];
 
     /**
@@ -768,8 +778,13 @@ class Client
                         $writer->writeElement('email', $invoice->customerEmail);
                     }
                     $writer->writeElement('sendEmail', $this->stringifyBoolean($invoice->customerReceivesEmail));
-                    $writer->writeElement('adoalany', $invoice->customerTaxType);
+                    if($invoice->customerTaxType){
+                        $writer->writeElement('adoalany', $invoice->customerTaxType);
+                    }
                     if ($invoice->customerTaxNumber) {
+                        $this->writeCdataElement($writer, 'adoszam', $invoice->customerTaxNumber);
+                    }
+                    if ($invoice->customerEUVAT) {
                         $this->writeCdataElement($writer, 'adoszam', $invoice->customerTaxNumber);
                     }
                     if ($invoice->customerShippingName) {
@@ -1569,5 +1584,30 @@ class Client
         }
 
         return new Receipt($head, $items, $payments);
+    }
+
+    /**
+     * @param string $taxNumber
+     * @param string   $EUVAT
+     */
+    public function queryTaxPayer(string $taxNumber, string $EUVAT)
+    {
+        $contents = $this->writer(
+            function (XMLWriter $writer) use (&$taxNumber, &$EUVAT) {
+                $writer->startElement('beallitasok');
+                {
+                    $this->writeCredentials($writer);
+                }
+                $writer->endElement();
+
+                $writer->writeElement('torzsszam', $taxNumber);
+            },
+            ...self::ACTIONS['QUERY_TAX_PAYER']['schema']
+        );
+
+        $contents = (string)$this->send(self::ACTIONS['QUERY_TAX_PAYER']['name'], $contents)->getBody();
+
+        $xml = $this->parse($contents);
+        return $xml;
     }
 }
